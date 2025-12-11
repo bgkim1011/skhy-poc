@@ -1,0 +1,746 @@
+{
+  "name": "[PSM] IND APPL OPMATE MCP",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "너는 Server 분석 Agent야.\n전달받은 msg를 토대로 서버가 실제로 위험한 상황인지, 그렇다면 원인은 무엇인지 분석하는 것이 목표야.\n너에겐 분석을 위해 Server 내에서 실행할 수 있는 Server Task들이 있어.\n어떠한 Task를 분석을 위해 사용해야하는 지 판단하고 수행해.\n여러 Task를 수행한 경우, 종합해서 분석을 진행해줘.\n수행에는 승인이 필요하지만, 스스로 승인 단계도 수행해서 진행해.\n분석 결과를 말할 때, 실제 상태 위험도(수행결과를 근거로 판단), 원인, 권장 조치 방안, 분석에 사용한 Task와 그 결과만 간결하게 말해줘."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        -1648,
+        64
+      ],
+      "id": "2b74427b-9d70-46a2-a1b4-22ea6bfd501a",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -1600,
+        352
+      ],
+      "id": "61054206-a9d8-45ca-86a9-eeb23819e790",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "content": "## OPMATE MCP",
+        "height": 520,
+        "width": 460,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -1200,
+        48
+      ],
+      "id": "4ee6ae0b-26c1-4634-a65a-cc191db47788",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "function_name"
+            },
+            {
+              "name": "task_name"
+            },
+            {
+              "name": "host_name"
+            },
+            {
+              "name": "arguments"
+            }
+          ]
+        }
+      },
+      "id": "2cd61e9e-6be2-45be-ba38-a3f6e4fab261",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        -672,
+        176
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "ab18304c-4f73-430f-b9fa-2ce4d098e1fa",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.function_name }}",
+                    "rightValue": "OPMATE_Task_List"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OPMATE_Task_List"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "ec97e1fb-61e1-43fc-8deb-c6928b11b4b0",
+                    "leftValue": "={{ $json.function_name }}",
+                    "rightValue": "OPMATE_Target_List",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OPMATE_Target_List"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f96c987a-d0dd-4cd7-8344-c0118e256d65",
+                    "leftValue": "={{ $json.function_name }}",
+                    "rightValue": "OPMATE_Task_Run",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OPMATE_Task_Run"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "fb279a8f-7f57-4bf8-a9ad-335e4377b6f1",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -528,
+        160
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "content": "## tools 호출 부분",
+        "height": 400,
+        "width": 300,
+        "color": 5
+      },
+      "id": "cb9a35bc-85ee-4ebf-9709-b0f907270b94",
+      "name": "Sticky Note8",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -688,
+        48
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "name": "OPMATE_Task_List",
+        "description": "name: OPMATE_Task_List\ndescription: |\n  Retrieves OPMATE task definitions for server maintenance.\n  Returns available system check/maintenance scripts with task_name, os, and description.\n\n  If there is no suitable predefined task for the intended use, you can pass commands via the `arguments` field.\n  MUST: Each command must be enclosed in **single quotation marks ('')**, separated by spaces, and up to 5 commands can be passed.\n  MUST: If any potentially dangerous command is included, the system will notify the user that a risky command has been detected. In such cases, the user's explicit approval will be requested before execution\nparameters:\n  type: object\n  properties:\n    task_name:\n      type: string\n      description: Optional filter by task name. Returns all tasks if omitted.\n        To use the AI command-based task, set task_name to `WP_LIN_AI_TEST`.\n  required: []\n",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "function_name": "OPMATE_Task_List"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "function_name",
+              "displayName": "function_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "task_name",
+              "displayName": "task_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "host_name",
+              "displayName": "host_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "arguments",
+              "displayName": "arguments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        -1136,
+        304
+      ],
+      "id": "276e3972-8208-4e58-b9a6-942913241dc7",
+      "name": "OPMATE Task List"
+    },
+    {
+      "parameters": {
+        "jsCode": "return [\n  {\n    json: {\n      task_name: 'COM_APPL_LIN_GET_UPT_ALL',\n      os: 'Linux',\n      description: 'Linux 서버에서 Uptime을 조회해서 1일 이내일 경우 NOK로 전달',\n      arguments:''\n    }\n  },\n  {\n    json: {\n      task_name: 'COM_APPL_LIN_GET_TOP_CPU',\n      os: 'Linux',\n      description: 'Linux 서버에서 User별  Process별 , CPU 사용률을 출력하도록 하는 태스크첫 번째로 출력된 JSON은 Process별 사용률 정보이고 두 번째로 출력된 JSON은 CPU 사용률 정보입니다. ',\n      arguments:''\n    }\n  },\n  {\n    json: {\n      task_name: 'COM_APPL_LIN_GET_TOP_MEMORY',\n      os: 'Linux',\n      description: 'Linux 서버에서 Process별 Memory 사용률, USER별 Memory 사용률을 조회하는 Task.첫 번째 JSON 출력은 Process별, 두 번째 JSON 출력은 USER별 Memroy 사용률',\n      arguments:''\n    }\n  },\n  {\n    json: {\n      task_name: 'COM_APPL_LIN_GET_SYSLOG_ALL',\n      os: 'Linux',\n      description: 'Linux 서버에서 /var/log/messages의 로그 중 호출한 시점으로부터 30분 이전까지의 로그를 조회하는 태스크',\n      arguments:''\n    }\n  },\n]; "
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "efe783d0-7caf-478e-b53a-d48043987f9f",
+      "name": "[TMP] OPMATE TASK List"
+    },
+    {
+      "parameters": {
+        "name": "OPMATE_Target_List",
+        "description": "name: OPMATE_Target_List\ndescription: |\n Retrieves hostnames where specified OPMATE task can be executed.\n Use OPMATE_Task_List first if task name is unknown.\n Returns: resultCode (EM1000=success), resultMsg, targetList (hostnames).\nparameters:\n type: object\n properties:\n   task_name:\n     type: string\n     description: OPMATE task name to get target hosts for\n required:\n   - task_name",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "function_name": "OPMATE_Target_List",
+            "task_name": "={{ $fromAI('task_name', `The task name to execute in OPMATE. Refer to OPMATE_Task_List if needed.`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "function_name",
+              "displayName": "function_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "task_name",
+              "displayName": "task_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "host_name",
+              "displayName": "host_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "arguments",
+              "displayName": "arguments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        -912,
+        304
+      ],
+      "id": "88a7b001-d3e0-4da3-a257-66e5ebd898ad",
+      "name": "OPMATE Target List"
+    },
+    {
+      "parameters": {
+        "name": "OPMATE_Task_Run",
+        "description": "name: OPMATE_Task_Run\ndescription: |\n Executes OPMATE task on target host (takes 1-2 minutes).\n ⚠️ IMPORTANT: Always confirm with user before execution.\nparameters:\n type: object\n properties:\n   task_name:\n     type: string\n     description: OPMATE task name to execute\n   host_name:\n     type: string\n     description: Target hostname for task execution\n   arguments:\n     type: string\n     description: (Optional) Additional arguments passed to the task script. Not all tasks require arguments — some may ignore them entirely.\n required:\n   - task_name\n   - host_name",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "function_name": "OPMATE_Task_Run",
+            "task_name": "={{ $fromAI('task_name', `The task name to execute in OPMATE. Refer to OPMATE_Task_List if needed.`, 'string') }}",
+            "host_name": "={{ $fromAI('host_name', `The host name to execute in OPMATE. Refer to OPMATE_Target_List if needed.`, 'String') }}",
+            "arguments": "={{ $fromAI('arguments', `(Optional) Additional arguments passed to the task script. These are positional parameters (e.g., $1, $2, ...) used by the task during execution.`, 'String') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "function_name",
+              "displayName": "function_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "task_name",
+              "displayName": "task_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "host_name",
+              "displayName": "host_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "arguments",
+              "displayName": "arguments",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        -1024,
+        400
+      ],
+      "id": "c30708c5-9d34-4387-bb0e-3757dce87b75",
+      "name": "OPMATE Task Run"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://n8n-workportal.cloudz.co.kr/webhook/8bae2232-993a-45af-93a7-5117e88e128b",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task_nm",
+              "value": "={{ $json.task_nm }}"
+            },
+            {
+              "name": "node_list",
+              "value": "={{ $json.node_list }}"
+            },
+            {
+              "name": "arguments",
+              "value": "={{ $json.arguments}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        240,
+        368
+      ],
+      "id": "ea543420-8842-4d71-ae96-0b5a7693c0be",
+      "name": "OPMATE Task 호출"
+    },
+    {
+      "parameters": {
+        "url": "=https://n8n-workportal.cloudz.co.kr/webhook/opmate_target_list",
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "task_name",
+              "value": "={{ $json.task_name }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        0,
+        176
+      ],
+      "id": "85988cca-20d9-4d55-b981-7b7d38a293de",
+      "name": "Target_list API"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3112290-4ae9-436f-aaa9-975214d950c4",
+              "name": "task_nm",
+              "value": "={{ $json.task_name }}",
+              "type": "string"
+            },
+            {
+              "id": "76ca287f-8c03-496b-a9e0-d48f0965f31c",
+              "name": "node_list",
+              "value": "=[\"{{ $json.host_name }}\"]",
+              "type": "array"
+            },
+            {
+              "id": "4532cd9f-86e2-457c-a477-98af95061760",
+              "name": "arguments",
+              "value": "={{ $json.arguments }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        0,
+        368
+      ],
+      "id": "b4e83457-7a45-41fd-b0d0-8edbc9ec0a1a",
+      "name": "변수 정리"
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-2.5-flash-preview-04-17-thinking",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -1856,
+        480
+      ],
+      "id": "22817971-e2a3-43c0-b091-eaf987431e94",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ebtvVsfHsIyZuVoL",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "=apac.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAwsBedrock",
+      "typeVersion": 1,
+      "position": [
+        -1744,
+        304
+      ],
+      "id": "b99bc6df-eb6f-4631-8baf-fde70379d2b6",
+      "name": "AWS Bedrock Chat Model",
+      "credentials": {
+        "aws": {
+          "id": "dP3xTY0nuj3ruLae",
+          "name": "[testbed] AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -1504,
+        528
+      ],
+      "typeVersion": 1,
+      "id": "ae5dd922-0e1d-4b80-8d5d-91d1ba6c3562",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "path": "appl_opmatemcp"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        -1120,
+        160
+      ],
+      "id": "5d19cba6-0b9c-4ef4-8f5c-84f4733d3716",
+      "name": "MCP Server Trigger",
+      "webhookId": "9ebc22e3-5858-449a-8adb-393b8c3e21d9"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -1872,
+        64
+      ],
+      "id": "f0e4d6ae-48a8-40af-a8e7-b37f5f672017",
+      "name": "When chat message received",
+      "webhookId": "b1dd7b7e-dded-40a7-9430-85c00bb5a984"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://api-workportal.cloudz.co.kr/mcp/aiesg-azure-query",
+        "serverTransport": "httpStreamable",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        -1504,
+        464
+      ],
+      "id": "5af4e068-8a10-489b-9e23-a38aad44acbe",
+      "name": "MCP Client"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "[TMP] OPMATE TASK List",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Target_list API",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "변수 정리",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPMATE Task List": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "[TMP] OPMATE TASK List": {
+      "main": [
+        []
+      ]
+    },
+    "OPMATE Target List": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPMATE Task Run": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "변수 정리": {
+      "main": [
+        [
+          {
+            "node": "OPMATE Task 호출",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS Bedrock Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "fa9bb069-c428-421d-94d0-667a773f9549",
+  "meta": {
+    "instanceId": "32c9d8e95c2b9debd6ab12f81b4fa4dc74869c3279c38e59801467d9d94f29c0"
+  },
+  "id": "ZdhHykvN7MosfkVf",
+  "tags": []
+}
