@@ -330,7 +330,7 @@
     {
       "parameters": {
         "executeOnce": false,
-        "command": "=snmpget -v 2c -c g10ry2HXs3 {{ $json.ip_address }} {{ $json.oid }}"
+        "command": "=snmpget -v 2c -c <communitystring> {{ $json.ip_address }} {{ $json.oid }}"
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -344,7 +344,7 @@
     {
       "parameters": {
         "executeOnce": false,
-        "command": "=sshpass -p 'SKrhkswp1234!' ssh \\\n  -o StrictHostKeyChecking=no \\\n  -o HostKeyAlgorithms=+ssh-rsa \\\n  aiagent@{{ $json.ip_address }} \"{{ $json.command }}\""
+        "command": "=sshpass -p 'password' ssh \\\n  -o StrictHostKeyChecking=no \\\n  -o HostKeyAlgorithms=+ssh-rsa \\\n  aiagent@{{ $json.ip_address }} \"{{ $json.command }}\""
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -358,7 +358,7 @@
     {
       "parameters": {
         "executeOnce": false,
-        "command": "=expect -c '\nset timeout 3\nspawn telnet {{ $json.ip_address }}\nexpect \"Username:\"\nsend \"aiagent\\r\"\nexpect \"Password:\"\nsend \"SKrhkswp1234!\\r\"\nexpect \">\"\nsend \"{{ $json.command }}\\r\"\nexpect \">\"\nsend \"exit\\r\"\nexpect {\n    eof\n    timeout { puts \"⏱ Timed out after exit command\" }\n}\n'"
+        "command": "=expect -c '\nset timeout 3\nspawn telnet {{ $json.ip_address }}\nexpect \"Username:\"\nsend \"username\\r\"\nexpect \"Password:\"\nsend \"password\\r\"\nexpect \">\"\nsend \"{{ $json.command }}\\r\"\nexpect \">\"\nsend \"exit\\r\"\nexpect {\n    eof\n    timeout { puts \"⏱ Timed out after exit command\" }\n}\n'"
       },
       "type": "n8n-nodes-base.executeCommand",
       "typeVersion": 1,
@@ -557,11 +557,11 @@
           "parameters": [
             {
               "name": "accessKey",
-              "value": "exZkMzekNVw7DblScyYdzg"
+              "value": "<accesskey>"
             },
             {
               "name": "secretKey",
-              "value": "=OQDaZiiKSquVTn2D3QY7Iqn3FUIbVqV03sgbngN4CpU"
+              "value": "=<secretkey>"
             }
           ]
         },
@@ -895,7 +895,7 @@
   "settings": {
     "executionOrder": "v1"
   },
-  "versionId": "40c80b90-e2be-428a-956e-92c4dad8012c",
+  "versionId": "d0095cd2-ccf1-4a19-a576-63e332e9b728",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "32c9d8e95c2b9debd6ab12f81b4fa4dc74869c3279c38e59801467d9d94f29c0"
