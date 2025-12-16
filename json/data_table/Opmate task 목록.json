@@ -1,0 +1,90 @@
+[
+    {
+      "id": 2,
+      "createdAt": "2025-12-09T06:22:11.889Z",
+      "updatedAt": "2025-12-16T06:53:27.009Z",
+      "task_id": "COM_LIN_GET_UPT_ALL",
+      "task_description": "Linux Uptime 확인하는 Task로 1일 이내면 NOK로 표시한다.",
+      "tower": "Server"
+    },
+    {
+      "id": 3,
+      "createdAt": "2025-12-09T06:25:10.319Z",
+      "updatedAt": "2025-12-16T06:53:29.614Z",
+      "task_id": "COM_WIN_GET_UPT_ALL",
+      "task_description": "Windows Uptime 확인하는 Task로 1일 이내면 NOK로 표시한다.",
+      "tower": "Server"
+    },
+    {
+      "id": 4,
+      "createdAt": "2025-12-09T06:26:50.127Z",
+      "updatedAt": "2025-12-16T06:53:31.005Z",
+      "task_id": "COM_AI_SVR_LIN_GET_TOP_CPU",
+      "task_description": "Linux 서버에서 User별 Process별, CPU 사용률을 출력하도록 하는 태스크첫 번째로 출력된 JSON은 Process별 사용률 정보이고 두 번째로 출력된 JSON은 CPU 사용률 정보입니다.",
+      "tower": "Server"
+    },
+    {
+      "id": 5,
+      "createdAt": "2025-12-09T06:33:15.271Z",
+      "updatedAt": "2025-12-16T06:53:32.027Z",
+      "task_id": "COM_AI_SVR_WIN_CPU_CHK",
+      "task_description": "WINDOWS 서버를 대상으로 수행되는 Task이고, 이벤트 메시지에 \"CPU 사용율\" 관련된 내용이 포함된 경우 우선적으로 해당 Task를 수행 스크립트에서 수행되는 내역 : CPU 사용률을 분석하여 TOP 5 프로세스 및 상세 정보를 조회",
+      "tower": "Server"
+    },
+    {
+      "id": 6,
+      "createdAt": "2025-12-10T06:10:00.801Z",
+      "updatedAt": "2025-12-16T06:53:33.486Z",
+      "task_id": "COM_AI_SVR_LIN_GET_LOG_SYSLOG_ALL",
+      "task_description": "Linux 서버에서 /var/log/messages의 로그 중 호출한 시점으로부터 30분 이전까지의 로그를 조회하는 태스크",
+      "tower": "Server"
+    },
+    {
+      "id": 8,
+      "createdAt": "2025-12-16T06:14:28.854Z",
+      "updatedAt": "2025-12-16T06:53:36.725Z",
+      "task_id": "COM_DB_ORACLE_APCO_WAIT_TIME",
+      "task_description": "Linux 서버의 Oracle Wait time 이벤트 대응",
+      "tower": "DB"
+    },
+    {
+      "id": 9,
+      "createdAt": "2025-12-16T06:15:45.004Z",
+      "updatedAt": "2025-12-16T06:53:37.946Z",
+      "task_id": "COM_DB_ORACLE_ARCHIVE_FULL",
+      "task_description": "Linux 서버의 Oracle Archive Full 이벤트 대응",
+      "tower": "DB"
+    },
+    {
+      "id": 10,
+      "createdAt": "2025-12-16T06:16:10.920Z",
+      "updatedAt": "2025-12-16T06:53:39.279Z",
+      "task_id": "COM_DB_ORACLE_ALERTLOG",
+      "task_description": "Linux 서버의 Oracle Alert Log 분석 이벤트 대응",
+      "tower": "DB"
+    },
+    {
+      "id": 11,
+      "createdAt": "2025-12-16T06:16:34.229Z",
+      "updatedAt": "2025-12-16T06:53:40.332Z",
+      "task_id": "COM_DB_ORACLE_TEMP_TABLESPACE",
+      "task_description": "Linux 서버의 Oracle TEMP Tablespace 이벤트 대응",
+      "tower": "DB"
+    },
+    {
+      "id": 12,
+      "createdAt": "2025-12-16T06:16:51.261Z",
+      "updatedAt": "2025-12-16T06:53:41.609Z",
+      "task_id": "COM_DB_ORACLE_HANG",
+      "task_description": "Linux 서버의 Oracle Hang 이벤트 대응",
+      "tower": "DB"
+    },
+    {
+      "id": 13,
+      "createdAt": "2025-12-16T06:17:07.301Z",
+      "updatedAt": "2025-12-16T06:53:42.796Z",
+      "task_id": "COM_DB_ORACLE_ROW_LOCK",
+      "task_description": "Linux 서버의 Oracle Row Lock 이벤트 대응",
+      "tower": "DB"
+    }
+  ]

@@ -1,0 +1,42 @@
+[
+  {
+    "id": 1,
+    "createdAt": "2025-12-08T08:13:47.116Z",
+    "updatedAt": "2025-12-08T08:24:31.778Z",
+    "event_div": "server_cpu",
+    "evt_msg": "[CPU임계치초과] [HOSTNAME] 에서 CPU 사용률이 최근 5분간 69%로 점검필요",
+    "evt_tower": "Server"
+  },
+  {
+    "id": 6,
+    "createdAt": "2025-12-08T08:23:06.527Z",
+    "updatedAt": "2025-12-08T08:24:50.484Z",
+    "event_div": "oracle_apco_wait_time",
+    "evt_msg": "[ORACLE 지연발생] [HOSTNAME] 서버에서 APCO_WAIT_TIME이 42분이며 Lock을 유발하는 query가 존재 (대기 중인 application class 수 : 10)",
+    "evt_tower": "DB"
+  },
+  {
+    "id": 3,
+    "createdAt": "2025-12-08T08:16:11.587Z",
+    "updatedAt": "2025-12-08T08:25:07.209Z",
+    "event_div": "server_down",
+    "evt_msg": "[ 서버 OS 이벤트 PING_DOWN 발생 ] [HOSTNAME] 서버에서 [HOSTNAME]-Ping Fail(IP_REQ_TIMED_OUT 61.250.19.103) 메시지 발생 {Monitoring tool}",
+    "evt_tower": "Server"
+  },
+  {
+    "id": 8,
+    "createdAt": "2025-12-16T05:52:08.926Z",
+    "updatedAt": "2025-12-16T05:58:29.380Z",
+    "event_div": "oracle_hang",
+    "evt_msg": "[ORACLE HANG 발생] [HOSTNAME] 서버에서 최근 5분간 insert / select 구문 실행 불가로 Hang 추정",
+    "evt_tower": "DB"
+  },
+  {
+    "id": 9,
+    "createdAt": "2025-12-16T05:58:38.642Z",
+    "updatedAt": "2025-12-16T06:02:07.536Z",
+    "event_div": "oracle_row_lock",
+    "evt_msg": "[ORACLE row lock] [HOSTNAME] 서버에서 TX - row lock : NOK 메시지 발생",
+    "evt_tower": "DB"
+  }
+]
