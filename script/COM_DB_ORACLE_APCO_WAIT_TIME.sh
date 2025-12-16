@@ -1,5 +1,9 @@
 #!/bin/bash
 LANG=C; export LANG
+
+### ORACLE WAIT_TIME(대기/락/트랜잭션) 점검 ###
+### Idle을 제외한 Active 세션의 CPU/Wait/Lock/TX 병목 확인 목적 ###
+
 #############################################################
 # [1] root로 실행 시 → DB 인스턴스 기동 유저로 전환
 #############################################################
@@ -91,7 +95,7 @@ EOF
 # [7] SQL 목록 정의 (TMPF/SSEG/SSQL 제외)
 #############################################################
 SQLS=(
-# ?? OCPU - Active Session 정보
+# 1. OCPU - Active Session 정보
 "SELECT 'OCPU-'||TO_CHAR(SYSDATE,'hh24:mi:ss') AS snaptime, a.sid, a.serial#, b.spid, NVL(a.username,'NoUser') AS username,
         SUBSTR(NVL(a.module,'P:'||SUBSTR(DECODE(SUBSTR(a.program,1,7),'oracle@',SUBSTR(a.program,INSTR(a.program,'(',1)),a.program),1,20)),1,20) AS module,
         SUBSTR((SELECT object_name FROM dba_objects c WHERE c.object_id=row_wait_obj#),1,30) AS objname,
@@ -104,7 +108,7 @@ SQLS=(
 FROM v\$session a, v\$process b
 WHERE a.paddr = b.addr(+) AND a.status='ACTIVE' AND a.state <> 'WAITING' AND a.wait_class <> 'Idle'
 ORDER BY a.event"
-# ?? LockTree - 잠금 관계 트리 조회
+# 2. LockTree - 잠금 관계 트리 조회
 "WITH v AS (
     SELECT DECODE(request,0,'Holder','Waiter') AS who,
            DECODE(request,0,id1||'-'||id2,inst_id||'-'||sid) AS id,
@@ -133,7 +137,7 @@ FROM (
 ) l, gv\$session a, gv\$process b, sys.obj$ c
 WHERE l.inst_id = a.inst_id AND l.sid = a.sid AND a.inst_id = b.inst_id AND a.paddr = b.addr AND a.row_wait_obj# = c.obj#(+)
 ORDER BY id1, lvl"
-# ?? Big TX - Undo 블록 50,000 이상 트랜잭션
+# 3. Big TX - Undo 블록 50,000 이상 트랜잭션
 "SELECT 'BTXS-'||TO_CHAR(SYSDATE,'hh24:mi:ss') AS snaptime, a.inst_id AS \"I#\", a.sid, a.serial#, b.spid,
         a.username, SUBSTR(a.program,1,20) AS program, SUBSTR(a.module,1,20) AS module,
         a.sql_id, a.status, c.used_ublk AS tx_ublk, c.used_urec AS tx_urec,
@@ -144,7 +148,7 @@ FROM gv\$session a, gv\$process b, gv\$transaction c
 WHERE a.inst_id=b.inst_id AND a.inst_id=c.inst_id AND a.paddr=b.addr AND a.taddr=c.addr
   AND a.type<>'BACKGROUND' AND c.used_ublk>=50000
 ORDER BY a.username, a.machine, a.sql_id, a.sid"
-# ?? Long TX - 1800초 이상 트랜잭션
+# 4. Long TX - 1800초 이상 트랜잭션
 "SELECT 'LTXS-'||TO_CHAR(SYSDATE,'hh24:mi:ss') AS snaptime, a.inst_id AS \"I#\", a.sid, a.serial#, b.spid,
         a.username, SUBSTR(a.program,1,20) AS program, SUBSTR(a.module,1,20) AS module,
         a.sql_id, a.status, c.used_ublk AS tx_ublk, c.used_urec AS tx_urec,

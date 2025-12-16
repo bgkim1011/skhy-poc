@@ -1,5 +1,8 @@
 #!/bin/bash
 LANG=C; export LANG
+
+### ORACLE HANG 점검 (DB/OS Health Check) ###
+
 #############################################################
 # [1] root → Oracle 기동 유저 전환
 #############################################################
@@ -85,7 +88,7 @@ Q_ACTIVE_SESS="select * from (
  where type='USER' and status='ACTIVE'
  order by seconds_in_wait desc
 ) where rownum <= 30"
-# 6. Blocking 세션
+# 6. Blocking 세션 Top 20
 Q_BLOCKING="select * from (
  select 'BLOCK' gubun, sid, serial#, username, blocking_session, event,
         seconds_in_wait, wait_class
@@ -105,7 +108,7 @@ Q_UNDO_TEMP="select 'UNDO_TEMP' gubun,
        (select round(sum(bytes)/1024/1024/1024,2) from dba_temp_files) temp_gb,
        (select round(sum(used_blocks*8192)/1024/1024/1024,2) from v\$sort_segment) temp_used_gb
 from dual"
-# 9. 시스템 이벤트 (Top 15)
+# 9. 시스템 이벤트 Top 15 (Idle 제외)
 Q_SYSTEM_EVENT="select * from (
  select 'WAIT_TOP' gubun, substr(event,1,40) event,
         total_waits, round(time_waited/100,2) waited_s

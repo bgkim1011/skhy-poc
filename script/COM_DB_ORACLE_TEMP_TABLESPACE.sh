@@ -1,6 +1,9 @@
 
 #!/bin/bash
 LANG=C; export LANG
+
+### ORACLE TEMP TABLESPACE 사용 현황 확인 ###
+
 #############################################################
 # [1] root로 실행 시 → DB 인스턴스 기동 유저로 전환
 #############################################################
@@ -31,7 +34,7 @@ fi
 #############################################################
 DB_CONN="/ as sysdba"
 #############################################################
-# [4] JSON 이스케이프
+# [4] JSON 이스케이프 (SQL text, module, hostname에 ",\ 포함 가능)
 #############################################################
 json_escape() {
   sed -e 's/\\/\\\\/g' -e 's/"/\\"/g'
@@ -104,6 +107,7 @@ function function_main() {
   echo "    {"
   echo "      \"data\": ["
   SQLS=(
+# TEMP 전체 Free 용량
 "select 'TMPF:'||to_char(sysdate,'hh24miss') gubun, 'TEMP' tablespace_name,
        case when (round(((select sum(bytes) from dba_temp_files where tablespace_name='TEMP')
                         -(select sum(total_blocks)*8192 from gv\$sort_segment where tablespace_name='TEMP'))
@@ -114,6 +118,8 @@ function function_main() {
                         /1024/1024/1024,2)
        end free_gb
 from dual"
+
+# gv$sort_segment 기반 TEMP 사용 현황
 "select 'SSEG:'||to_char(sysdate,'hh24miss') gubun
       ,tablespace_name, decode(grouping(inst_id),1,'Total',inst_id) inst_id
       ,to_char(sum(round(total_blocks*8192/1024/1024/1024,2)),'99990.00') cur_total_gb
@@ -126,6 +132,8 @@ from dual"
 from gv\$sort_segment
 group by tablespace_name, rollup(inst_id)
 order by 1,2,3"
+
+# TEMP 많이 쓰는 SQL TOP 분석
 "select 'SSQL:'||to_char(sysdate,'hh24miss') gubun
       ,a.inst_id
       ,a.tablespace tbs
@@ -144,6 +152,7 @@ group by a.inst_id, a.tablespace, nvl(b.sql_id,a.sql_id), substr(c.sql_text,1,80
 having sum(a.blocks)*8192/1024/1024/1024 >= 1
 order by a.inst_id, a.tablespace, nvl(b.sql_id,a.sql_id)"
   )
+
   RUN_SQL "${SQLS[@]}"
   echo "      ],"
   echo "      \"status\": \"OK\""

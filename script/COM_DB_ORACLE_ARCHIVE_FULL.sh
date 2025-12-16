@@ -1,5 +1,8 @@
 #!/bin/bash
 LANG=C; export LANG
+
+### ORACLE ARCHIVE_LOG 점검 ###
+
 #############################################################
 # [1] root → Oracle 기동 유저 전환
 #############################################################
@@ -99,19 +102,19 @@ EOF
   ARCH_PATH=$(echo "$ARCH_PATH" | grep -v "^$" | tail -1 | tr -d '[:space:]')
   [ -z "$ARCH_PATH" ] && ARCH_PATH="UNKNOWN"
   SQLS=(
-# ① 아카이브 모드 및 경로
+# 1. 아카이브 모드 및 경로 확인
 "select 'ARC_LOC' gubun,
        log_mode,
        name db_name,
        (select value from v\$parameter where name='log_archive_dest_1') archive_dest
 from v\$database"
-# ② 저장소 유형 (ASM / FILESYSTEM)
+# 2. 저장소 유형 판별 (ASM vs FILESYSTEM)
 "select 'ARC_TYPE' gubun,
         case when upper(value) like '+%' then 'ASM' else 'FILESYSTEM' end storage_type,
         value archive_dest
   from v\$parameter
  where name='log_archive_dest_1'"
-# ③ ASM 환경: 오래된 아카이브 로그 TOP 20
+# 3. ASM 환경: 오래된 아카이브 로그 TOP 20
 "select * from (
         select 'ASM_OLD' gubun,
                f.inst_id,
@@ -130,7 +133,7 @@ from v\$database"
          where f.type = 'ARCHIVELOG'
          order by f.creation_date
      ) where rownum <= 20"
-# ④ FILESYSTEM 환경: 오래된 아카이브 로그 TOP 20 (blocks × block_size)
+# 4. FILESYSTEM 환경: 오래된 아카이브 로그 TOP 20 (blocks × block_size)
 "select * from (
         select 'FS_OLD' gubun,
                name file_name,
