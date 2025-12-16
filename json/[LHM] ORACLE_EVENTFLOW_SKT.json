@@ -1,0 +1,1159 @@
+{
+  "name": "[LHM] DB 이벤트 Flow",
+  "nodes": [
+    {
+      "parameters": {
+        "modelSource": "inferenceProfile",
+        "model": "apac.anthropic.claude-sonnet-4-20250514-v1:0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAwsBedrock",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        208
+      ],
+      "id": "315942fe-8092-4487-8bc4-b9328f4c1479",
+      "name": "AWS Bedrock Chat Model",
+      "credentials": {
+        "aws": {
+          "id": "oBtvnNa9IuTXhBGc",
+          "name": "[Testbed] AWS Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Task 검증",
+        "height": 352,
+        "width": 496,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        832,
+        0
+      ],
+      "id": "f2d4058e-09a8-475c-9bfe-35ee48fb204c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.toJsonString() }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1056,
+        208
+      ],
+      "id": "c25a81a3-11c5-4774-8887-306c1828470e",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "endpointUrl": "https://workflow.work-portal.sktelecom.com/mcp/opmate_db_lhm",
+        "serverTransport": "httpStreamable",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        1200,
+        208
+      ],
+      "id": "b7f9a3aa-6c06-4521-853a-d2b9e085f06f",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "function_name"
+            },
+            {
+              "name": "param",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "8daa8bc3-9370-4809-961b-31deae729238",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        64,
+        720
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "## OPMATE MCP",
+        "height": 352,
+        "width": 652,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        0
+      ],
+      "id": "6b1aa723-4bca-45e7-ac3c-ec1f06289617",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "content": "## tools 호출 부분",
+        "height": 816,
+        "width": 1328,
+        "color": 5
+      },
+      "id": "18f77f41-943d-4ded-9bd8-086419ba4000",
+      "name": "Sticky Note10",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        0,
+        384
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "OPMATE-TASK",
+          "mode": "list",
+          "cachedResultName": "OPMATE-TASK"
+        },
+        "prompt": "={{ $json.param.task_purpose }}",
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.2,
+      "position": [
+        464,
+        416
+      ],
+      "id": "015b3e1e-f076-4136-a4d9-a3951dcd8606",
+      "name": "Qdrant Vector Store2",
+      "credentials": {
+        "qdrantApi": {
+          "id": "BoUzaUcqPgVTfkRp",
+          "name": "[EXS팀][운영] QdrantApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "amazon.titan-embed-text-v2:0"
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsAwsBedrock",
+      "typeVersion": 1,
+      "position": [
+        464,
+        560
+      ],
+      "id": "33b1947b-c314-47b6-8957-a39361f1cbf3",
+      "name": "Embeddings AWS Bedrock",
+      "credentials": {
+        "aws": {
+          "id": "oBtvnNa9IuTXhBGc",
+          "name": "[Testbed] AWS Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "abf2b2f8-b899-4edd-98b1-012c93b6ef17",
+              "leftValue": "={{$json.node_list}}",
+              "rightValue": 10,
+              "operator": {
+                "type": "array",
+                "operation": "lengthLte",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        640,
+        880
+      ],
+      "id": "61ec4417-a389-4392-bfc6-b61b92cc0e93",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.work-portal.sktelecom.com/opmate2/target_list/{{ $json.param.task_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        704
+      ],
+      "id": "caf41346-c693-4298-a5ef-8fd5ac0af3fc",
+      "name": "Target_list API1"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "select service_nm,hostname,env,db_product_nm,db_operator1_nm,db_operator2_nm from v_opmate_v2_tag\nwhere db_yn='Y' and {{  $('When Executed by Another Workflow').item.json.param.query}}\nLimit 100",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.mySql",
+      "typeVersion": 2.5,
+      "position": [
+        640,
+        704
+      ],
+      "id": "248308c1-86ba-4cac-83f1-d7972b92ba44",
+      "name": "Execute a SQL query2",
+      "credentials": {
+        "mySql": {
+          "id": "t4CyQjCH0OZigxEz",
+          "name": "[WorkPortal PRD] MySQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// DB에서 조회한 전체 장비 목록\nconst dbResult = $input.all();\n\n// Target_list API 노드 데이터 가져오기\nconst apiResult = $('Target_list API1').first().json;\n\n// OPMATE 대상 hostname 리스트\nconst targetList = apiResult.targetList;\n\n// 1. targetList가 비어있으면\nif (!targetList || targetList.length === 0) {\n  return [\n    {\n      json: {\n        code: 'NO_TARGET',\n        msg: 'Task에 수행 가능한 장비가 없습니다.',\n        data: [],\n      },\n    },\n  ];\n}\n\n// 2. dbResult가 비어있으면\nif (!dbResult || dbResult.length === 0) {\n  return [\n    {\n      json: {\n        code: 'NO_HOST',\n        msg: '전달한 정보에 맞는 호스트가 없습니다.',\n        data: [],\n      },\n    },\n  ];\n}\n\n// 3. 필터링된 장비 리스트 생성\nconst filteredHosts = [];\nfor (let i = 0; i < dbResult.length; i++) {\n  const row = dbResult[i].json; // ← 여기서 .json으로 접근!\n  if (targetList.includes(row.hostname)) {\n    filteredHosts.push(row);\n  }\n}\n\nlet msg = '';\nlet data = [];\nlet code = '';\n\nif (filteredHosts.length > 0) {\n  msg = '장비 조회 성공';\n  data = filteredHosts;\n  code = 'OK';\n} else {\n  msg = 'Task에 수행 가능한 호스트가 없습니다.';\n  data = targetList;\n  code = 'NO_MATCH';\n}\n\nreturn [\n  {\n    json: {\n      code: code,\n      msg: msg,\n      data: data,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        704
+      ],
+      "id": "2e071147-2d9a-48e9-8f15-0a7b60884114",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://api.work-portal.sktelecom.com/opmate2/task_run/{{ $json.task_nm }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": " application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "node_list",
+              "value": "={{ $json.node_list }}"
+            },
+            {
+              "name": "param_list",
+              "value": "={{ $json.arguments || NULL }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        832,
+        864
+      ],
+      "id": "b381e189-e3cd-4efb-a3e4-3957b5f51612",
+      "name": "OPMATE Task 수행"
+    },
+    {
+      "parameters": {
+        "jsCode": "// API 응답 데이터\nconst apiResult = $input.first().json.body;\n\n// resultMsg 추출\nconst resultMsg = apiResult.resultMsg;\n\n// runResult에서 필요한 값만 추출\nconst runResult = apiResult.runResult.map(item => {\n  return {\n    hostname: item.hostname,\n    start_dt: item.start_dt,\n    stdout: item.stdout\n  };\n});\n\n// 최종 결과 반환\nreturn [\n  {\n    json: {\n      resultMsg,\n      runResult\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        864
+      ],
+      "id": "c1fc134a-df28-49f7-bcfd-c5510f0ca52c",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "jsCode": "// n8n 입력 아이템 전체 가져오기\nconst items = $input.all();\n\n// 필요한 필드만 추출\nconst result = items.map(item => {\n  return {\n    content: item.json.document.pageContent,\n    task_id: item.json.document.metadata.task_id,\n    master: item.json.document.metadata.master,\n    score: item.json.score\n  };\n});\n\n// 최종 [{ data: [...] }] 형태로 반환\nreturn [\n  {\n    json: {\n      data: result\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        816,
+        416
+      ],
+      "id": "f00eb2c6-81cd-4c2e-8b38-3d252271d9fd",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "name": "OPMATE_Task_Run",
+        "description": "대상 호스트 목록과 Task_id로 OPMATE TASK를 즉시 실행합니다. (약 1~2분 정도 소요)",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "function_name": "OPMATE_Task_Run",
+            "param": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('param', `parameters:\n  type: object\n  properties:\n    task_id:\n      type: string\n      description: 실행할 OPMATE 작업명\n    hostname_list:\n      type: list\n      description: 작업을 실행할 대상 호스트명 목록으로 여러대 수행시 List에 담아서 한번에 호출(10대 이상 호출 제한)\n    arguments:\n      type: string\n      description: |\n        (선택) 작업 스크립트에 전달할 추가 인자값.\n        스크립트에서 사용하는 위치 기반 매개변수(e.g. \\`$1\\`, \\`$2\\` 등)로 전달됩니다.\n  required:\n    - task_id\n    - hostname_list`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "function_name",
+              "displayName": "function_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "param",
+              "displayName": "param",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1840,
+        208
+      ],
+      "id": "9769d46d-f984-46dd-9dff-6290a5a82e2a",
+      "name": "OPMATE Task Run1"
+    },
+    {
+      "parameters": {
+        "name": "OPMATE_Task_Search",
+        "description": "Vector DB에서 DB와 관련된 OPMATE Task를 찾습니다.\n전달 받은 이벤트 정보를 바탕으로 가장 유사한 OPMATE Task를 반환합니다.",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "function_name": "OPMATE_Task_Search",
+            "param": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('param', `parameters:\n type: object\n properties:\n  task_purpose:\n    type: string\n    description: 사용하고자 하는 목적(용도)을 **한글로 입력**합니다.\n required: [task_purpose]`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "function_name",
+              "displayName": "function_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "param",
+              "displayName": "param",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1472,
+        208
+      ],
+      "id": "393923bb-f55f-41d2-9039-469fe4b7172f",
+      "name": "OPMATE Task Search1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "name": "OPMATE_Target_Search",
+        "description": "이벤트가 발생한 host_name 정보를 바탕으로 유사도가 가장 높은 OPMATE TASK의 대상 노드 목록에서 찾습니다.\n만약 task_id에 대한 정보가 없다면 **OPMATE_Task_Search** 를 사용하여 task_id를 확인한 후 조회합니다.\n추가로 호스트명을 사용자가 전달한다면 이게 대상이 맞는지 정확한 호스트명인지 확인합니다.\n\n**동작 방식**  \n - 사용자가 자연어로 특정 조건을 요청하면, 해당 요청을 SQL 조건으로 변환하여 조회를 수행합니다.(mysql)\n - 검색 조건은 모두 `LIKE` 연산자로 처리됩니다.\n - 주요 검색 필드:  \n  - 서비스명 → `service_nm`  \n  - 호스트명 → `hostname`\n  - 환경 -> env\n  - 제품명 -> db_product_nm\n  - 운영자 -> db_operator1_nm , db_operator2_nm\n - env는 운영 - PRD / 개발 - DEV / 스테이징 - STG / DR - DR / 그외는 ETC\n\n**예시**  \n - 사용자가: \"gate 서비스 조회해줘\"  \n → SQL 조건: `service_nm LIKE '%gate%'`\n - 사용자가: \"trpweb1 호스트명 검색해줘\"  \n → SQL 조건: `hostname LIKE '%trpweb1%'`\n - 사용자가: \"oracle 있는 운영 장비 중에 운영자가 심현승인 대상 보여줘\"  \n → SQL 조건: `db_product_nm LIKE '%oracle%' AND env LIKE '%PRD%' AND '심현승' in (db_operator1_nm,db_operator2_nm)`",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "function_name": "OPMATE_Target_Search",
+            "param": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('param', `parameters:\n  type: object\n  properties:\n    task_id:\n      type: string\n      description: 조회할 OPMATE 작업명\n    query:\n      type: string\n      description: 사용자가 요청하는 검색 조건을 조건 쿼리로 파싱하여 전달(mysql)\n  required:\n    - task_id\n    - query`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "function_name",
+              "displayName": "function_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "param",
+              "displayName": "param",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        1648,
+        208
+      ],
+      "id": "1f381655-cb42-4163-936f-155939022c08",
+      "name": "OPMATE_Target_Search1"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "ab18304c-4f73-430f-b9fa-2ce4d098e1fa",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.function_name }}",
+                    "rightValue": "OPMATE_Task_Search"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OPMATE_Task_Search"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6df6a4b6-1edc-49b7-bdb5-3f5ce74dcb59",
+                    "leftValue": "={{ $json.function_name }}",
+                    "rightValue": "OPMATE_Target_Search",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OPMATE_Target_Search"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f96c987a-d0dd-4cd7-8344-c0118e256d65",
+                    "leftValue": "={{ $json.function_name }}",
+                    "rightValue": "OPMATE_Task_Run",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OPMATE_Task_Run"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a528ba5c-24df-40dc-986d-85baf1b73c1c",
+      "name": "Switch1",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        208,
+        704
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3112290-4ae9-436f-aaa9-975214d950c4",
+              "name": "task_nm",
+              "value": "={{ $json.param.task_id }}",
+              "type": "string"
+            },
+            {
+              "id": "76ca287f-8c03-496b-a9e0-d48f0965f31c",
+              "name": "node_list",
+              "value": "={{ $json.param.hostname_list }}",
+              "type": "array"
+            },
+            {
+              "id": "dbc6c092-5941-4cca-bfd3-35a09f733b51",
+              "name": "arguments",
+              "value": "={{ $json.param.arguments }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        480,
+        880
+      ],
+      "id": "524ea7ce-2723-435b-a731-370b4005cc22",
+      "name": "변수 정리1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c2cf9d81-e79d-49df-a6c4-2631db92f9e8",
+              "name": "msg",
+              "value": "10대 이상 수행할 수 없습니다.",
+              "type": "string"
+            },
+            {
+              "id": "2bcdd581-8370-47e4-8f1b-4593a5f2de7c",
+              "name": "status",
+              "value": "Fail",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        832,
+        1040
+      ],
+      "id": "64293755-1496-40cb-9eec-9f4be1629add",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "path": "opmate_db_lhm"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        1568,
+        48
+      ],
+      "id": "f602aead-f409-4b40-9ee0-c6f91ff6e415",
+      "name": "MCP Server Trigger1",
+      "webhookId": "7ed50d99-6a0e-4bae-b758-271b4a72f2fd"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "oracle_event_flow_lhm",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        64,
+        192
+      ],
+      "id": "fd733268-fd7d-42aa-bac6-7350c9ea9b88",
+      "name": "Webhook",
+      "webhookId": "8921f3fb-3036-43a9-a8ab-0fca8a7acdc6"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "9e7218ac-58f7-49ad-8abd-02eec1c430ff",
+              "name": "host_name",
+              "value": "={{ $json.body.host_name }}",
+              "type": "string"
+            },
+            {
+              "id": "36bc6c11-9774-475f-84da-93785b551f6f",
+              "name": "splunk_domain",
+              "value": "={{ $json.body.splunk_domain }}",
+              "type": "string"
+            },
+            {
+              "id": "4c4024e6-7bd9-491e-98c3-c5b165565f36",
+              "name": "splunk_item",
+              "value": "={{ $json.body.splunk_item }}",
+              "type": "string"
+            },
+            {
+              "id": "bb0eb429-c8d2-4510-b1d6-e7a3da43e3bf",
+              "name": "issue_receive_date",
+              "value": "={{ $json.body.issue_receive_date }}",
+              "type": "string"
+            },
+            {
+              "id": "9ff45aad-2990-48c3-963d-f2a452a3346c",
+              "name": "msg",
+              "value": "={{ $json.body.msg }}",
+              "type": "string"
+            },
+            {
+              "id": "91115a10-6395-4274-a0ab-31219b10b8dd",
+              "name": "email",
+              "value": "={{ $json.body.email }}",
+              "type": "array"
+            },
+            {
+              "id": "7b61ee9a-6288-42ba-ae28-6c941999fe3b",
+              "name": "canvas_id",
+              "value": "={{ $json.body.canvas_id }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        272,
+        192
+      ],
+      "id": "fb587ebc-a10c-4895-8edf-669b431baae2",
+      "name": "Edit Fields3"
+    },
+    {
+      "parameters": {
+        "content": "## EVENT 생성기 URL\n## Tower 및 이벤트 추가는 박수민M에게 요청\n## https://workflow.work-portal.sktelecom.com/form/event_generater",
+        "height": 352,
+        "width": 792
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "3af37f31-5a81-478e-a8ff-dda104414b04",
+      "name": "Sticky Note8"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.toJsonString() }}",
+        "options": {
+          "systemMessage": "너는 DB Agent로 msg의 내용을 기반으로 MCP를 활용하여 적절한 OPMATE Task를 찾고, host_name을 참고하여 Target 노드 대상으로 Task를 실행해줘. 최종 점검 결과는 Slack으로 전달해줘.\n\nMUST : 접두사가 'WP_MCP_DB_'가 아닌 Task는 대상에서 제외해줘.\n\n",
+          "maxIterations": 20
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        976,
+        48
+      ],
+      "id": "9f23fe7f-9598-4b0d-9721-98b67f8f96fd",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bd592539-15ff-4b86-ac2d-0036f4661a3e",
+              "name": "type",
+              "value": "text",
+              "type": "string"
+            },
+            {
+              "id": "9765e052-f0f1-4f10-8b27-0d6eccc68682",
+              "name": "email",
+              "value": "['hm_lee@sk.com']",
+              "type": "array"
+            },
+            {
+              "id": "2c0180d5-af3d-49e7-ae13-c3c2327034bb",
+              "name": "mesg",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1440,
+        480
+      ],
+      "id": "74cfd6d6-531a-4848-8ca2-b7942221f647",
+      "name": "Slack 변수 설정"
+    },
+    {
+      "parameters": {
+        "content": "## Slack 전송",
+        "height": 460,
+        "width": 652,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        384
+      ],
+      "id": "4250f170-9bf1-4568-ba1e-6f5aad08070e",
+      "name": "Sticky Note12"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.work-portal.sktelecom.com/api/add_to_canvas",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "canvas_id",
+              "value": "={{ $('Edit Fields3').item.json.canvas_id }}"
+            },
+            {
+              "name": "content",
+              "value": "=---\n## 🤖 DB Agent 수행결과\n```\n{{ $json.text }}\n```\n---"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1856,
+        656
+      ],
+      "id": "c9d54523-4971-4082-8895-1a3501ef2846",
+      "name": "Slack_Add_To_Canvas",
+      "alwaysOutputData": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "language": "python",
+        "pythonCode": "import json\nimport re\n\n# 단계 1: 입력 데이터 처리\ntry:\n    input_data = items[0]['json']\n    type_data = input_data['type']  # \"text\" 그대로 유지\n    emails = input_data['email']    # 이메일 목록 그대로 유지\n    mesg_str = input_data['mesg']   # mesg: JSON 문자열이 아닌 일반 텍스트\n    # mesg_str을 줄 단위로 분할\n    mesg = mesg_str.split('\\n')\nexcept KeyError as e:\n    return [{\"json\": {\"error\": f\"Missing key: {e}\"}}]\nexcept Exception as e:\n    return [{\"json\": {\"error\": f\"Error processing mesg: {e}\"}}]\n\n# 디버깅: mesg 구조 확인\nprint(f\"mesg length: {len(mesg)}\")\nprint(\"First few lines:\", mesg[:5])\n\n# 단계 2: Markdown → Slack mrkdwn 변환 (대안용)\nmrkdwn = '\\n'.join(mesg)\nmrkdwn = re.sub(r'\\*\\*(.*?)\\*\\*', r'*\\1*', mrkdwn)  # bold 변환 (**text** → *text*)\nmrkdwn = re.sub(r'^- ', '• ', mrkdwn, flags=re.MULTILINE)  # bullet 변환 (- → •)\nmrkdwn = re.sub(r'^###\\s*(.*?)$', r'*\\1*\\n', mrkdwn, flags=re.MULTILINE)  # 헤딩 변환\nmrkdwn = re.sub(r'---', '────────────', mrkdwn, flags=re.MULTILINE)  # 구분선 변환\n\n# 단계 3: Slack Blocks 포맷팅 (동적 섹션 분리)\nblocks = []\n\n# 섹션별로 분리하여 처리\nsections = [\n    (\"🚨 Server Down 이벤트 이상증상 분석 결과\", \"## 이벤트 정보\"),\n    (\"🔍 이상증상 진단 결과\", \"## 이상증상 패턴 분석\"),\n    (\"🛠️ 자동 조치 필요 여부 판단\", \"## 권장 조치 방안\"),\n    (\"✅ 결론\", \"## 결론\")\n]\n\ncurrent_idx = 0\nfor section_title, section_start in sections:\n    # 섹션 시작점 찾기\n    start_idx = None\n    for i, line in enumerate(mesg[current_idx:], current_idx):\n        if line.strip().startswith(section_start):\n            start_idx = i\n            break\n    \n    if start_idx is None:\n        continue\n    \n    # 다음 섹션 시작점 찾기\n    end_idx = len(mesg)\n    for i, line in enumerate(mesg[start_idx + 1:], start_idx + 1):\n        if line.strip().startswith(\"## \"):\n            end_idx = i\n            break\n    \n    # 섹션 텍스트 추출\n    section_text = '\\n'.join(mesg[start_idx:end_idx])\n    section_text = re.sub(r'\\*\\*(.*?)\\*\\*', r'*\\1*', section_text)\n    section_text = re.sub(r'^- ', '• ', section_text, flags=re.MULTILINE)\n    section_text = re.sub(r'---', '────────────', section_text, flags=re.MULTILINE)\n    \n    # Blocks 추가\n    blocks.append({\n        \"type\": \"header\",\n        \"text\": {\"type\": \"plain_text\", \"text\": section_title, \"emoji\": True}\n    })\n    blocks.append({\n        \"type\": \"section\",\n        \"text\": {\n            \"type\": \"mrkdwn\",\n            \"text\": section_text if section_text.strip() else \"내용 없음\"\n        }\n    })\n    blocks.append({\"type\": \"divider\"})\n    \n    current_idx = end_idx\n\n# 버튼 추가\nblocks.append({\n    \"type\": \"actions\",\n    \"elements\": [\n        {\n            \"type\": \"button\",\n            \"text\": {\"type\": \"plain_text\", \"text\": \"로그 확인\", \"emoji\": True},\n            \"url\": \"https://aws.console/logs\"\n        }\n    ]\n})\n\n# 디버깅: Blocks 구조 확인\nprint(\"Blocks created:\", len(blocks))\n\n# 단계 4: 출력 (입력 그대로 + Slack용 blocks, text)\noutput = {\n    \"type\": type_data,\n    \"email\": emails,\n    \"mesg\": mesg_str,  # 원본 텍스트 유지\n    \"blocks\": blocks,  # Slack 노드의 Blocks 필드용\n    \"text\": mrkdwn     # 대안: Blocks 실패 시 Text 사용\n}\n\nreturn [{\"json\": output}]"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1648,
+        480
+      ],
+      "id": "1a787e6e-9a09-4220-8629-426bba9306ce",
+      "name": "Slack Formatter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://workflow.work-portal.sktelecom.com/webhook/WPSlack",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "type",
+              "value": "={{ $json[\"type\"] }}"
+            },
+            {
+              "name": "email",
+              "value": "={{ $json[\"email\"] }}"
+            },
+            {
+              "name": "mesg",
+              "value": "={{ $json[\"mesg\"] }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1856,
+        480
+      ],
+      "id": "4650c519-17b5-4cba-9d53-181fdb753e55",
+      "name": "WorkPortal Bot"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AWS Bedrock Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store2": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings AWS Bedrock": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "OPMATE Task 수행",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Target_list API1": {
+      "main": [
+        [
+          {
+            "node": "Execute a SQL query2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute a SQL query2": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPMATE Task 수행": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPMATE Task Run1": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPMATE Task Search1": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPMATE_Target_Search1": {
+      "ai_tool": [
+        [
+          {
+            "node": "MCP Server Trigger1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch1": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Target_list API1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "변수 정리1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "변수 정리1": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields3": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack 변수 설정": {
+      "main": [
+        [
+          {
+            "node": "Slack Formatter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Slack 변수 설정",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Slack Formatter": {
+      "main": [
+        [
+          {
+            "node": "WorkPortal Bot",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Slack_Add_To_Canvas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "",
+  "meta": {
+    "instanceId": "005da30201731d46df3296a3b817d911821f7e3be4d698136ad238440b479e5c"
+  },
+  "tags": []
+}

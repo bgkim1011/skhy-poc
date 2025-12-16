@@ -1,0 +1,556 @@
+{
+  "name": "[Agent] DB Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "c6f7c58e-2827-485e-add4-7ef051429f12",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -224,
+        -48
+      ],
+      "id": "e9a8b7f4-8ced-4d30-a9bd-20fbcce2231d",
+      "name": "Webhook",
+      "webhookId": "c6f7c58e-2827-485e-add4-7ef051429f12"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"evt_msg\": \"[ORACLE HANG 발생] [HOSTNAME] 서버에서 최근 5분간 insert / select 구문 실행 불가로 Hang 추정\",\n  \"hostname\": \"testlab-db01\",\n  \"os\": \"Linux\",\n  \"environment\": \"DEV\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        352,
+        144
+      ],
+      "id": "b20fd6ba-77b4-41d3-941b-5728a1e95b59",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d5851f38-79bc-4f83-a809-6224ba0503f1",
+              "name": "event",
+              "value": "={{ $json.body }}",
+              "type": "object"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -48,
+        -48
+      ],
+      "id": "3b6dfd91-c181-4ea0-8645-eb93d63e3059",
+      "name": "Alert Message"
+    },
+    {
+      "parameters": {
+        "modelSource": "inferenceProfile",
+        "model": "global.amazon.nova-2-lite-v1:0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAwsBedrock",
+      "typeVersion": 1.1,
+      "position": [
+        48,
+        144
+      ],
+      "id": "afff2ee2-0443-4b3f-b901-7b488b462e02",
+      "name": "AWS Bedrock Chat Model",
+      "credentials": {
+        "aws": {
+          "id": "ylnWaPwTlixzo5sK",
+          "name": "AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "0CfBhMFs5eLkFORd",
+          "mode": "list",
+          "cachedResultName": "서버 정보",
+          "cachedResultUrl": "/projects/PzYc6OaG71jkslh7/datatables/0CfBhMFs5eLkFORd"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "hostname",
+              "condition": "ilike",
+              "keyValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('conditions0_Value', `이벤트를 보고 hostname을 검출해서 검색한다`, 'string') }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTableTool",
+      "typeVersion": 1,
+      "position": [
+        208,
+        144
+      ],
+      "id": "6730a9ad-443f-4782-9c82-5d692c5f4943",
+      "name": "Get row(s) in Data table"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.event.toJsonString()  }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "당신은 전달받은 메시지에서 주요 정보를 추출하는 AI입니다.\n\n메시지에서 다음 정보를 추출해 JSON 형식으로 응답하세요:\n- eventtitle\n- hostname\n- environment(예: PRD, DEV)\n\nEventTitle은 메시지 내용에서 적절히 추출해주세요. 후보는 ORACLE_APCO_WAIT_TIME, ORACLE_ARCHIVE_FULL, ORACLE_ALERTLOG, ORACLE_TEMP_TABLESPACE, ORACLE_HANG, ORACLE_ROW_LOCK 입니다.\n\nparameters:\n type: object\n properties:\n   task_name:\n     type: string\n     description: OPMATE task name to get target hosts for\n required:\n   - task_name\n\n\n출력 예시:\n{\n  \"eventtitle\": \"ORACLE_HANG\",\n  \"hostname\": \"testlab-db01\",\n  \"environment\": \"DEV\"\n}\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        112,
+        -48
+      ],
+      "id": "89b8c3cd-702b-414e-ad5b-ddae3363b20a",
+      "name": "AI Agent : 이벤트 정제"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.toJsonString() }}",
+        "options": {
+          "systemMessage": "너는 DB 분석 Agent야. 너의 목표는 전달받은 msg를 토대로 DB가 실제로 위험한 상황인지, 그렇다면 원인은 무엇인지 분석하는 것이야.\n\n너에겐 분석을 위해 DB에 접속해서 확인할 수 있는 DB Task들이 있어.\n\n분석을 위해 어떤 Task를 사용해야하는 지 판단하고 수행해줘. 여러 Task를 수행하는 경우, 종합해서 분석을 진행해줘.\n\nTASK 수행은 승인 없이 진행해줘.\n\n분석 결과를 말할 때, 실제 상태 위험도(수행결과를 근거로 판단), 원인, 권장 조치 방안, 분석에 사용한 Task와 그 결과만 간결하게 말해줘.",
+          "maxIterations": 20
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        544,
+        -48
+      ],
+      "id": "61971a5b-c9dd-4708-977f-d1d1fd175a16",
+      "name": "AI Agent : OPMATE 수행"
+    },
+    {
+      "parameters": {
+        "modelSource": "inferenceProfile",
+        "model": "apac.anthropic.claude-sonnet-4-20250514-v1:0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAwsBedrock",
+      "typeVersion": 1.1,
+      "position": [
+        544,
+        144
+      ],
+      "id": "048cd230-07b3-461f-b091-a4dbe36a61d6",
+      "name": "AWS Bedrock Chat Model1",
+      "credentials": {
+        "aws": {
+          "id": "ylnWaPwTlixzo5sK",
+          "name": "AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://192.168.99.202/mcp/opmate_db",
+        "serverTransport": "httpStreamable",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        688,
+        144
+      ],
+      "id": "aca6f9f2-011f-4b07-9f6d-60b9d23e2c90",
+      "name": "MCP Client"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{$json.toJsonString() }}",
+        "options": {
+          "systemMessage": "너는 DB 분석 Agent야. 너의 목표는 전달받은 msg를 토대로 DB가 실제로 위험한 상황인지, 그렇다면 원인은 무엇인지 분석하는 것이야.\n\n너에겐 분석을 위해 DB에 접속해서 확인할 수 있는 DB Task들이 있어.\n\n분석을 위해 어떤 Task를 사용해야하는 지 판단하고 수행해줘. 여러 Task를 수행하는 경우, 종합해서 분석을 진행해줘.\n\nTASK 수행은 승인 없이 진행해줘.\n\n분석 결과를 말할 때, 실제 상태 위험도(수행결과를 근거로 판단), 원인, 권장 조치 방안, 분석에 사용한 Task와 그 결과만 간결하게 말해줘."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        -96
+      ],
+      "id": "0429373a-b4a2-4789-89b6-6a55dc73acae",
+      "name": "AI Agent : OPMATE 수행1"
+    },
+    {
+      "parameters": {
+        "modelSource": "inferenceProfile",
+        "model": "apac.anthropic.claude-sonnet-4-20250514-v1:0",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAwsBedrock",
+      "typeVersion": 1.1,
+      "position": [
+        1408,
+        96
+      ],
+      "id": "e22a0365-ed2f-4c6f-abbf-23878c15d571",
+      "name": "AWS Bedrock Chat Model2",
+      "credentials": {
+        "aws": {
+          "id": "ylnWaPwTlixzo5sK",
+          "name": "AWS account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "endpointUrl": "http://192.168.99.202/mcp/opmate_db",
+        "serverTransport": "httpStreamable",
+        "options": {
+          "timeout": 300000
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpClientTool",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        96
+      ],
+      "id": "54b60c1e-7a66-45ad-9102-37ef17a9fac3",
+      "name": "MCP Client1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        1248,
+        -96
+      ],
+      "id": "20da9f32-1437-486d-911e-534089c0b8cd",
+      "name": "When chat message received",
+      "webhookId": "b18ace67-e038-4a2d-9fee-fca3cc3c5c8b"
+    },
+    {
+      "parameters": {
+        "content": "# MCP 호출 ",
+        "height": 528,
+        "width": 1200
+      },
+      "id": "42e6deb9-a1f4-44cd-ba40-8ceb077c1694",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -272,
+        -144
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        240
+      ],
+      "id": "22081ef9-1168-457d-98fa-bba5716d0d8a",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "url": "=http://192.168.99.202:5000/opmate2/target_list/COM_DB_ORACLE_HANG",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1568,
+        368
+      ],
+      "id": "eef5e34f-91f5-4bcd-b755-16c05dea19de",
+      "name": "Target_list API"
+    },
+    {
+      "parameters": {
+        "url": "=http://192.168.99.202:5000/opmate2/task_list/COM",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1568,
+        512
+      ],
+      "id": "c63971f2-5598-4e97-8fa5-f62ffe055515",
+      "name": "Task_list API"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://192.168.99.202:5000/opmate2/task_run/{{ $json.task_nm }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": " application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "node_list",
+              "value": "={{ $json.node_list }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1568,
+        240
+      ],
+      "id": "3637df61-7b8c-4d00-b3bc-ceb9a1f68bf7",
+      "name": "OPMATE Task 수행2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3112290-4ae9-436f-aaa9-975214d950c4",
+              "name": "task_nm",
+              "value": "=COM_DB_ORACLE_HANG",
+              "type": "string"
+            },
+            {
+              "id": "76ca287f-8c03-496b-a9e0-d48f0965f31c",
+              "name": "node_list",
+              "value": "={{['testlab-db01']}}",
+              "type": "array"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1360,
+        240
+      ],
+      "id": "79023791-de46-4079-9323-6d879bf74e7b",
+      "name": "변수 정리1"
+    },
+    {
+      "parameters": {
+        "content": "# Playground",
+        "height": 816,
+        "width": 848
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        992,
+        -144
+      ],
+      "id": "b21b51ee-0bef-4c22-b02b-ad147c59109c",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent : 이벤트 정제",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Alert Message": {
+      "main": [
+        [
+          {
+            "node": "AI Agent : 이벤트 정제",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Alert Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS Bedrock Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent : 이벤트 정제",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in Data table": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent : 이벤트 정제",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent : 이벤트 정제": {
+      "main": [
+        [
+          {
+            "node": "AI Agent : OPMATE 수행",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS Bedrock Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent : OPMATE 수행",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent : OPMATE 수행",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AWS Bedrock Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent : OPMATE 수행1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MCP Client1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent : OPMATE 수행1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent : OPMATE 수행1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "변수 정리1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "변수 정리1": {
+      "main": [
+        [
+          {
+            "node": "OPMATE Task 수행2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Target_list API",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Task_list API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "4efd46f8-453e-4b64-b07a-46d0506c8fe1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "2787bfd791fe7cfc4b0f53daddd919c8b5a06d57b9ff44795ee26a5b122fbeff"
+  },
+  "id": "O6n5qO9c1g5PqjK0",
+  "tags": []
+}

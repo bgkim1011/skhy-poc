@@ -1,0 +1,705 @@
+{
+  "name": "[Tool] MCP DB",
+  "nodes": [
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "ab18304c-4f73-430f-b9fa-2ce4d098e1fa",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.function_name }}",
+                    "rightValue": "OPMATE_Task_Search"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OPMATE_Task_Search"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "6df6a4b6-1edc-49b7-bdb5-3f5ce74dcb59",
+                    "leftValue": "={{ $json.function_name }}",
+                    "rightValue": "OPMATE_Target_Search",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OPMATE_Target_Search"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "f96c987a-d0dd-4cd7-8344-c0118e256d65",
+                    "leftValue": "={{ $json.function_name }}",
+                    "rightValue": "OPMATE_Task_Run",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "OPMATE_Task_Run"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "9cd4dd17-2e5b-45b7-85e8-d788e39dfd90",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        304,
+        48
+      ],
+      "typeVersion": 3.2
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c3112290-4ae9-436f-aaa9-975214d950c4",
+              "name": "task_nm",
+              "value": "={{ $json.param.task_id }}",
+              "type": "string"
+            },
+            {
+              "id": "76ca287f-8c03-496b-a9e0-d48f0965f31c",
+              "name": "node_list",
+              "value": "={{ $json.param.hostname_list }}",
+              "type": "array"
+            },
+            {
+              "id": "dbc6c092-5941-4cca-bfd3-35a09f733b51",
+              "name": "arguments",
+              "value": "={{ $json.arguments }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        240
+      ],
+      "id": "cca00214-95a8-4640-a203-da37ac04c8f7",
+      "name": "변수 정리"
+    },
+    {
+      "parameters": {
+        "content": "## MCP 호출 ",
+        "height": 816,
+        "width": 1984,
+        "color": 5
+      },
+      "id": "1ff28268-77ab-40bd-b59a-e9c504484c44",
+      "name": "Sticky Note10",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -480,
+        -256
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "mode": "load",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "OPMATE-TASK",
+          "mode": "list",
+          "cachedResultName": "OPMATE-TASK"
+        },
+        "prompt": "={{ $json.param.task_purpose }}",
+        "topK": 5,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.2,
+      "position": [
+        768,
+        -464
+      ],
+      "id": "1d45e9ae-8dc6-4382-aebf-b16edaf4d074",
+      "name": "Qdrant Vector Store2",
+      "credentials": {
+        "qdrantApi": {
+          "id": "kXxGAgfUXTq2kcXL",
+          "name": "QdrantApi account"
+        }
+      },
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "abf2b2f8-b899-4edd-98b1-012c93b6ef17",
+              "leftValue": "={{$json.node_list}}",
+              "rightValue": 10,
+              "operator": {
+                "type": "array",
+                "operation": "lengthLte",
+                "rightType": "number"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        800,
+        240
+      ],
+      "id": "2d496523-4551-40d9-888d-c9757186e019",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "url": "=http://192.168.99.202:5000/opmate2/target_list/{{ $json.param.task_id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        608,
+        64
+      ],
+      "id": "5c2f661c-9ae7-439e-ae1e-8c7ad606fc42",
+      "name": "Target_list API1"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=http://192.168.99.202:5000/opmate2/task_run/{{ $json.task_nm }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": " application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "node_list",
+              "value": "={{ $json.node_list }}"
+            },
+            {
+              "name": "param_list",
+              "value": "={{ $json.arguments || NULL }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "fullResponse": true
+            }
+          },
+          "timeout": 300000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1040,
+        224
+      ],
+      "id": "528042f3-d0fd-46c0-96ff-9a127185e684",
+      "name": "OPMATE Task 수행"
+    },
+    {
+      "parameters": {
+        "jsCode": "// API 응답\nconst body = $input.first()?.json?.body ?? {};\n\n// 메시지/결과 추출\nconst resultMsg = body?.resultMsg ?? null;\nconst list = Array.isArray(body?.runResult) ? body.runResult : [];\n\n// 필요한 필드만 매핑\nconst runResult = list.map(item => ({\n  hostname: item?.hostname ?? null,\n  start_dt: item?.start_dt ?? null,\n  stdout:   item?.stdout ?? null,\n}));\n\n// hasData / failReason 등 보조 정보도 함께 반환\nreturn [\n  {\n    json: {\n      resultMsg,\n      hasData: runResult.length > 0,\n      runResult,\n      failReason: body?.message || body?.error || null, // API가 실패 사유를 주면 여기로\n    },\n  },\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1264,
+        224
+      ],
+      "id": "7bc1fb4e-89b8-41f5-9748-6483602e7174",
+      "name": "Code3"
+    },
+    {
+      "parameters": {
+        "jsCode": "const tasks = $input.all().map(item => item.json);\nreturn [\n  {\n    json: {\n      tool_result: tasks          // [{}, {}, ...] 형태\n    }\n  }\n];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        -128
+      ],
+      "id": "9ba0cfa7-63da-44d8-8ea3-602789547d4a",
+      "name": "Code4"
+    },
+    {
+      "parameters": {
+        "name": "OPMATE_Task_Run",
+        "description": "지정한 대상 호스트 목록과 Task_id로 OPMATE 작업을 실행합니다.\n실행에는 약 1~2분 소요됩니다.\nOPMATE_Task_Run 실행 관련하여 별도 승인 절차는 필요 없습니다.",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "function_name": "OPMATE_Task_Run",
+            "param": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('param', `parameters:\n  type: object\n  properties:\n    task_id:\n      type: string\n      description: 실행할 OPMATE 작업명\n    hostname_list:\n      type: list\n      description: 작업을 실행할 대상 호스트명 목록으로 여러대 수행시 List에 담아서 한번에 호출(10대 이상 호출 제한)\n    arguments:\n      type: string\n      description: |\n        (선택) 작업 스크립트에 전달할 추가 인자값.\n        스크립트에서 사용하는 위치 기반 매개변수(e.g. \\`$1\\`, \\`$2\\` 등)로 전달됩니다.\n  required:\n    - task_id\n    - hostname_list`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "function_name",
+              "displayName": "function_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "param",
+              "displayName": "param",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        -96,
+        224
+      ],
+      "id": "7d275c32-0a0a-42cc-bb4e-aa5c252228f2",
+      "name": "OPMATE Task Run1"
+    },
+    {
+      "parameters": {
+        "name": "OPMATE_Task_Search",
+        "description": "n8n datatables 에서 DB와 관련된 OPMATE Task 정의를 조회합니다.\n\n발생한 이벤트 정보를 기반으로 가장 유사한 TASK를 반환합니다.\n\n사용자가 필요한 기능(용도)을 **한글로 입력**하는 경우, 해당 용도와 가장 유사한 Task를 반환합니다. 용도는 os와 tower를 반드시 참고합니다.",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "function_name": "OPMATE_Task_Search",
+            "param": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('param', `parameters:\n type: object\n properties:\n  task_purpose:\n    type: string\n    description: 사용하고자 하는 목적(용도)을 **한글로 입력**합니다.\n required: [task_purpose]`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "function_name",
+              "displayName": "function_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "param",
+              "displayName": "param",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        -96,
+        -144
+      ],
+      "id": "63bf61f1-8a93-4b22-9665-5465abbfb6b7",
+      "name": "OPMATE Task Search1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "name": "OPMATE_Target_Search",
+        "description": "사용자가 입력한 검색 조건을 기반으로 SQL 조건을 동적으로 생성하여 대상장비를 조회합니다.\n\n만약 task_id에 대한 정보가 없다면 **OPMATE_Task_Search** 를 사용하여 task_id를 확인한 후 조회합니다.\n\n**동작 방식**  \n - 사용자가 자연어로 특정 조건을 요청하면, 해당 요청을 SQL 조건으로 변환하여 조회를 수행합니다.(mysql)\n - 검색 조건은 모두 `LIKE` 연산자로 처리됩니다.\n - 주요 검색 필드:  \n  - 서비스명 → `service_nm`  \n  - 고객사명 → `customer_nm`  \n  - 호스트명 → `hostname`\n\n**예시**  \n - 사용자가: \"워커힐 홈페이지 서비스 조회해줘\"  \n → SQL 조건: `AND service_nm LIKE '%워커힐 홈페이지%'`\n - 사용자가: \"네트웍스 고객사 장비 조회해줘\"  \n → SQL 조건: `AND customer_nm LIKE '%네트웍스%'`\n - 사용자가: \"web-01 호스트명 검색해줘\"  \n → SQL 조건: `AND hostname LIKE '%web-01%'`\n - 사용자가: \"네트웍스 고객사에서 사용하는 워커힐 홈페이지 서비스 장비 보여줘\"  \n → SQL 조건: `AND customer_nm LIKE '%네트웍스%' AND service_nm LIKE '%워커힐 홈페이지%'`",
+        "workflowId": {
+          "__rl": true,
+          "value": "={{ $workflow.id }}",
+          "mode": "id"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "function_name": "OPMATE_Target_Search",
+            "param": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('param', `parameters:\n  type: object\n  properties:\n    task_id:\n      type: string\n      description: 조회할 OPMATE 작업명\n    hostname:\n      type: string\n      description: task에 target이 되는 hostname`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "function_name",
+              "displayName": "function_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string",
+              "removed": false
+            },
+            {
+              "id": "param",
+              "displayName": "param",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "object",
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.1,
+      "position": [
+        -96,
+        32
+      ],
+      "id": "cfc45f6c-bf8d-4fab-a41c-dc205d195afc",
+      "name": "OPMATE_Target_Search1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c2cf9d81-e79d-49df-a6c4-2631db92f9e8",
+              "name": "msg",
+              "value": "10대 이상 수행할 수 없습니다.",
+              "type": "string"
+            },
+            {
+              "id": "2bcdd581-8370-47e4-8f1b-4593a5f2de7c",
+              "name": "status",
+              "value": "Fail",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        400
+      ],
+      "id": "7e7a15cb-aed3-4733-8157-dade5cb1952e",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": [
+            {
+              "name": "function_name"
+            },
+            {
+              "name": "param",
+              "type": "object"
+            }
+          ]
+        }
+      },
+      "id": "0eef06f1-3bf5-4466-b6ff-fd1ecc0818bb",
+      "name": "When Executed by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "position": [
+        96,
+        64
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "jsCode": "// DB에서 조회한 전체 장비 목록\nconst dbResult = $input.all();\n\n// Target_list API 노드 데이터 가져오기\nconst apiResult = $('Target_list API1').first().json;\n\n// OPMATE 대상 hostname 리스트\nconst targetList = apiResult.targetList;\n\n// 1. targetList가 비어있으면\nif (!targetList || targetList.length === 0) {\n  return [\n    {\n      json: {\n        code: 'NO_TARGET',\n        msg: 'Task에 수행 가능한 장비가 없습니다.',\n        data: [],\n      },\n    },\n  ];\n}\n\n// 2. dbResult가 비어있으면\nif (!dbResult || dbResult.length === 0) {\n  return [\n    {\n      json: {\n        code: 'NO_HOST',\n        msg: '전달한 정보에 맞는 호스트가 없습니다.',\n        data: [],\n      },\n    },\n  ];\n}\n\n// 3. 필터링된 장비 리스트 생성\nconst filteredHosts = [];\nfor (let i = 0; i < dbResult.length; i++) {\n  const row = dbResult[i].json; // ← 여기서 .json으로 접근!\n  if (targetList.includes(row.hostname)) {\n    filteredHosts.push(row);\n  }\n}\n\nlet msg = '';\nlet data = [];\nlet code = '';\n\nif (filteredHosts.length > 0) {\n  msg = '장비 조회 성공';\n  data = filteredHosts;\n  code = 'OK';\n} else {\n  msg = 'Task에 수행 가능한 호스트가 없습니다.';\n  data = targetList;\n  code = 'NO_MATCH';\n}\n\nreturn [\n  {\n    json: {\n      code: code,\n      msg: msg,\n      data: data,\n    },\n  },\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1040,
+        64
+      ],
+      "id": "d07f53ad-6494-42a8-be9a-3b5ece2c7de7",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "UaBoE9cBZxcAdQGO",
+          "mode": "list",
+          "cachedResultName": "Opmate task 목록",
+          "cachedResultUrl": "/projects/PzYc6OaG71jkslh7/datatables/UaBoE9cBZxcAdQGO"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "tower",
+              "keyValue": "DB"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -128
+      ],
+      "id": "191b3282-f6be-4469-8f23-cd09a4a7c0fb",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "path": "opmate_db"
+      },
+      "type": "@n8n/n8n-nodes-langchain.mcpTrigger",
+      "typeVersion": 2,
+      "position": [
+        -432,
+        -48
+      ],
+      "id": "11130fc3-13d1-4e26-9173-a0aeb525d99b",
+      "name": "DB MCP Trigger",
+      "webhookId": "7e100c49-5720-433c-86dc-09f4e30398c1",
+      "notesInFlow": false
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Target_list API1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "변수 정리",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "변수 정리": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store2": {
+      "main": [
+        []
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "OPMATE Task 수행",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Target_list API1": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPMATE Task 수행": {
+      "main": [
+        [
+          {
+            "node": "Code3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPMATE Task Run1": {
+      "ai_tool": [
+        [
+          {
+            "node": "DB MCP Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPMATE Task Search1": {
+      "ai_tool": [
+        [
+          {
+            "node": "DB MCP Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OPMATE_Target_Search1": {
+      "ai_tool": [
+        [
+          {
+            "node": "DB MCP Trigger",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Code4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3c2ee2c3-bfc3-4c25-832b-490d334dc981",
+  "meta": {
+    "instanceId": "2787bfd791fe7cfc4b0f53daddd919c8b5a06d57b9ff44795ee26a5b122fbeff"
+  },
+  "id": "qlvmImDF795dBsOZ",
+  "tags": []
+}
